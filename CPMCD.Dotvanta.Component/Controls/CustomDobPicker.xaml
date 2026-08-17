@@ -1,0 +1,622 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<ContentView
+    x:Class="CPMCD.Dotvanta.Component.Controls.CustomDobPicker"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:conv="clr-namespace:CPMCD.Dotvanta.Component.Converters"
+    x:Name="Root">
+
+    <ContentView.Resources>
+        <conv:StringToBoolConverter x:Key="StringToBoolConverter" />
+    </ContentView.Resources>
+
+    <Grid>
+
+        <!--  =========================================================  -->
+        <!--  MAIN DOB FIELD  -->
+        <!--  =========================================================  -->
+
+        <VerticalStackLayout Spacing="6">
+
+            <!--  LABEL  -->
+
+            <Label
+                FontAttributes="Bold"
+                FontSize="13"
+                Text="{Binding Label, Source={x:Reference Root}}"
+                TextColor="{AppThemeBinding Light=#374151,
+                                            Dark=#D1D5DB}">
+
+                <Label.Triggers>
+
+                    <DataTrigger
+                        Binding="{Binding Label, Source={x:Reference Root}}"
+                        TargetType="Label"
+                        Value="">
+
+                        <Setter Property="IsVisible" Value="False" />
+
+                    </DataTrigger>
+
+                    <DataTrigger
+                        Binding="{Binding Label, Source={x:Reference Root}}"
+                        TargetType="Label"
+                        Value="{x:Null}">
+
+                        <Setter Property="IsVisible" Value="False" />
+
+                    </DataTrigger>
+
+                </Label.Triggers>
+
+            </Label>
+
+
+            <!--  =====================================================  -->
+            <!--  DATE FIELD  -->
+            <!--  =====================================================  -->
+
+            <Border
+                Padding="14,0"
+                BackgroundColor="{AppThemeBinding Light=#FFFFFF,
+                                                  Dark=#1F2937}"
+                HeightRequest="54"
+                Stroke="{AppThemeBinding Light=#D1D5DB,
+                                         Dark=#374151}"
+                StrokeShape="RoundRectangle 14"
+                StrokeThickness="1">
+
+                <Border.GestureRecognizers>
+
+                    <TapGestureRecognizer Tapped="OnDateTapped" />
+
+                </Border.GestureRecognizers>
+
+
+                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+
+
+                    <!--  CALENDAR ICON  -->
+
+                    <Border
+                        Grid.Column="0"
+                        BackgroundColor="{AppThemeBinding Light=#EFF6FF,
+                                                          Dark=#1E3A5F}"
+                        HeightRequest="36"
+                        StrokeShape="RoundRectangle 10"
+                        StrokeThickness="0"
+                        WidthRequest="36">
+
+                        <Label
+                            FontAttributes="Bold"
+                            FontSize="15"
+                            HorizontalOptions="Center"
+                            Text="D"
+                            TextColor="{AppThemeBinding Light=#2563EB,
+                                                        Dark=#60A5FA}"
+                            VerticalOptions="Center" />
+
+                    </Border>
+
+
+                    <!--  DATE TEXT  -->
+
+                    <VerticalStackLayout
+                        Grid.Column="1"
+                        Spacing="1"
+                        VerticalOptions="Center">
+
+                        <Label
+                            FontAttributes="Bold"
+                            FontSize="15"
+                            Text="{Binding DateText, Source={x:Reference Root}}"
+                            TextColor="{AppThemeBinding Light=#111827,
+                                                        Dark=#F9FAFB}" />
+
+                        <Label
+                            FontSize="10"
+                            Text="Tap to select date"
+                            TextColor="{AppThemeBinding Light=#9CA3AF,
+                                                        Dark=#6B7280}" />
+
+                    </VerticalStackLayout>
+
+
+                    <!--  AGE  -->
+
+                    <Border
+                        Grid.Column="2"
+                        Padding="10,6"
+                        BackgroundColor="{AppThemeBinding Light=#F3F4F6,
+                                                          Dark=#374151}"
+                        IsVisible="{Binding ShowAge, Source={x:Reference Root}}"
+                        StrokeShape="RoundRectangle 10"
+                        StrokeThickness="0">
+
+                        <Label
+                            FontAttributes="Bold"
+                            FontSize="11"
+                            Text="{Binding AgeDisplay, Source={x:Reference Root}}"
+                            TextColor="{AppThemeBinding Light=#4B5563,
+                                                        Dark=#D1D5DB}" />
+
+                    </Border>
+
+                </Grid>
+
+            </Border>
+
+
+            <!--  ERROR  -->
+
+            <Label
+                FontSize="11"
+                IsVisible="False"
+                Text="{Binding ErrorText, Source={x:Reference Root}}"
+                TextColor="{AppThemeBinding Light=#DC2626,
+                                            Dark=#F87171}">
+
+                <Label.Triggers>
+
+                    <DataTrigger
+                        Binding="{Binding ErrorText, Source={x:Reference Root}}"
+                        TargetType="Label"
+                        Value="">
+
+                        <Setter Property="IsVisible" Value="False" />
+
+                    </DataTrigger>
+
+                    <DataTrigger
+                        Binding="{Binding ErrorText, Source={x:Reference Root}}"
+                        TargetType="Label"
+                        Value="{x:Null}">
+
+                        <Setter Property="IsVisible" Value="False" />
+
+                    </DataTrigger>
+
+                </Label.Triggers>
+
+            </Label>
+
+        </VerticalStackLayout>
+
+
+        <!--  =========================================================  -->
+        <!--  OVERLAY  -->
+        <!--  =========================================================  -->
+
+        <Grid
+            x:Name="PickerOverlay"
+            BackgroundColor="#70000000"
+            IsVisible="False"
+            ZIndex="100">
+
+
+            <!--  OUTSIDE AREA  -->
+
+            <Grid x:Name="OverlayBackground">
+
+                <Grid.GestureRecognizers>
+
+                    <TapGestureRecognizer Tapped="OnOverlayTapped" />
+
+                </Grid.GestureRecognizers>
+
+            </Grid>
+
+
+            <!--  =====================================================  -->
+            <!--  BOTTOM SHEET  -->
+            <!--  =====================================================  -->
+
+            <Border
+                x:Name="PickerSheet"
+                BackgroundColor="{AppThemeBinding Light=#FFFFFF,
+                                                  Dark=#111827}"
+                StrokeThickness="0"
+                VerticalOptions="End">
+
+                <Border.StrokeShape>
+
+                    <RoundRectangle CornerRadius="28,28,0,0" />
+
+                </Border.StrokeShape>
+
+
+                <Grid Padding="20,12,20,20" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto">
+
+
+                    <!--  HANDLE  -->
+
+                    <Border
+                        Grid.Row="0"
+                        BackgroundColor="{AppThemeBinding Light=#D1D5DB,
+                                                          Dark=#4B5563}"
+                        HeightRequest="4"
+                        HorizontalOptions="Center"
+                        StrokeShape="RoundRectangle 3"
+                        StrokeThickness="0"
+                        WidthRequest="44" />
+
+
+                    <!--  =================================================  -->
+                    <!--  HEADER  -->
+                    <!--  =================================================  -->
+
+                    <Grid
+                        Grid.Row="1"
+                        Margin="0,18,0,12"
+                        ColumnDefinitions="*,Auto">
+
+                        <VerticalStackLayout Grid.Column="0" Spacing="2">
+
+                            <Label
+                                FontAttributes="Bold"
+                                FontSize="23"
+                                Text="Date of birth"
+                                TextColor="{AppThemeBinding Light=#111827,
+                                                            Dark=#F9FAFB}" />
+
+                            <Label
+                                FontSize="12"
+                                Text="Select your date"
+                                TextColor="{AppThemeBinding Light=#6B7280,
+                                                            Dark=#9CA3AF}" />
+
+                        </VerticalStackLayout>
+
+
+                        <!--  CLOSE  -->
+
+                        <Border
+                            Grid.Column="1"
+                            BackgroundColor="{AppThemeBinding Light=#F3F4F6,
+                                                              Dark=#1F2937}"
+                            HeightRequest="40"
+                            StrokeShape="RoundRectangle 20"
+                            StrokeThickness="0"
+                            WidthRequest="40">
+
+                            <Border.GestureRecognizers>
+
+                                <TapGestureRecognizer Tapped="CancelClicked" />
+
+                            </Border.GestureRecognizers>
+
+                            <Label
+                                FontSize="25"
+                                HorizontalOptions="Center"
+                                Text="×"
+                                TextColor="{AppThemeBinding Light=#374151,
+                                                            Dark=#E5E7EB}"
+                                VerticalOptions="Center" />
+
+                        </Border>
+
+                    </Grid>
+
+
+                    <!--  =================================================  -->
+                    <!--  SELECTED DATE  -->
+                    <!--  =================================================  -->
+
+                    <Border
+                        Grid.Row="2"
+                        Margin="0,0,0,12"
+                        Padding="14,10"
+                        BackgroundColor="{AppThemeBinding Light=#EFF6FF,
+                                                          Dark=#172554}"
+                        StrokeShape="RoundRectangle 14"
+                        StrokeThickness="0">
+
+                        <Grid ColumnDefinitions="*,Auto">
+
+                            <VerticalStackLayout Spacing="2">
+
+                                <Label
+                                    FontSize="10"
+                                    Text="Selected date"
+                                    TextColor="{AppThemeBinding Light=#6B7280,
+                                                                Dark=#93C5FD}" />
+
+                                <Label
+                                    x:Name="SelectedDatePreview"
+                                    FontAttributes="Bold"
+                                    FontSize="17"
+                                    TextColor="{AppThemeBinding Light=#1D4ED8,
+                                                                Dark=#BFDBFE}" />
+
+                            </VerticalStackLayout>
+
+
+                            <Border
+                                Grid.Column="1"
+                                Padding="10,6"
+                                BackgroundColor="{AppThemeBinding Light=#FFFFFF,
+                                                                  Dark=#1E3A8A}"
+                                StrokeShape="RoundRectangle 10"
+                                StrokeThickness="0">
+
+                                <Label
+                                    x:Name="PreviewAge"
+                                    FontAttributes="Bold"
+                                    FontSize="11"
+                                    TextColor="{AppThemeBinding Light=#2563EB,
+                                                                Dark=#DBEAFE}" />
+
+                            </Border>
+
+                        </Grid>
+
+                    </Border>
+
+
+                    <!--  =================================================  -->
+                    <!--  COLUMN HEADERS  -->
+                    <!--  =================================================  -->
+
+                    <Grid
+                        Grid.Row="3"
+                        Margin="0,0,0,4"
+                        ColumnDefinitions="1.25*,0.75*,1*">
+
+                        <Label
+                            Grid.Column="0"
+                            FontAttributes="Bold"
+                            FontSize="10"
+                            HorizontalTextAlignment="Center"
+                            Text="MONTH"
+                            TextColor="{AppThemeBinding Light=#9CA3AF,
+                                                        Dark=#6B7280}" />
+
+                        <Label
+                            Grid.Column="1"
+                            FontAttributes="Bold"
+                            FontSize="10"
+                            HorizontalTextAlignment="Center"
+                            Text="DAY"
+                            TextColor="{AppThemeBinding Light=#9CA3AF,
+                                                        Dark=#6B7280}" />
+
+                        <Label
+                            Grid.Column="2"
+                            FontAttributes="Bold"
+                            FontSize="10"
+                            HorizontalTextAlignment="Center"
+                            Text="YEAR"
+                            TextColor="{AppThemeBinding Light=#9CA3AF,
+                                                        Dark=#6B7280}" />
+
+                    </Grid>
+
+
+                    <!--  =================================================  -->
+                    <!--  WHEELS  -->
+                    <!--  =================================================  -->
+
+                    <Grid
+                        Grid.Row="4"
+                        ColumnDefinitions="1.25*,0.75*,1*"
+                        ColumnSpacing="4"
+                        HeightRequest="240">
+
+
+                        <!--  CENTER SELECTED AREA  -->
+
+                        <Border
+                            Grid.ColumnSpan="3"
+                            BackgroundColor="{AppThemeBinding Light=#F8FAFC,
+                                                              Dark=#1F2937}"
+                            HeightRequest="48"
+                            InputTransparent="True"
+                            Stroke="{AppThemeBinding Light=#DCE3EA,
+                                                     Dark=#374151}"
+                            StrokeShape="RoundRectangle 12"
+                            StrokeThickness="1"
+                            VerticalOptions="Center"
+                            ZIndex="0" />
+
+
+                        <!--  =================================================  -->
+                        <!--  MONTH SCROLL  -->
+                        <!--  =================================================  -->
+
+                        <ScrollView
+                            x:Name="MonthScroll"
+                            Grid.Column="0"
+                            BackgroundColor="Transparent"
+                            HeightRequest="240"
+                            HorizontalScrollBarVisibility="Never"
+                            Scrolled="MonthScrollScrolled"
+                            VerticalScrollBarVisibility="Never"
+                            ZIndex="1">
+
+                            <VerticalStackLayout x:Name="MonthContainer" Spacing="0" />
+
+                        </ScrollView>
+
+
+                        <!--  =================================================  -->
+                        <!--  DAY SCROLL  -->
+                        <!--  =================================================  -->
+
+                        <ScrollView
+                            x:Name="DayScroll"
+                            Grid.Column="1"
+                            BackgroundColor="Transparent"
+                            HeightRequest="240"
+                            HorizontalScrollBarVisibility="Never"
+                            Scrolled="DayScrollScrolled"
+                            VerticalScrollBarVisibility="Never"
+                            ZIndex="1">
+
+                            <VerticalStackLayout x:Name="DayContainer" Spacing="0" />
+
+                        </ScrollView>
+
+
+                        <!--  =================================================  -->
+                        <!--  YEAR SCROLL  -->
+                        <!--  =================================================  -->
+
+                        <ScrollView
+                            x:Name="YearScroll"
+                            Grid.Column="2"
+                            BackgroundColor="Transparent"
+                            HeightRequest="240"
+                            HorizontalScrollBarVisibility="Never"
+                            Scrolled="YearScrollScrolled"
+                            VerticalScrollBarVisibility="Never"
+                            ZIndex="1">
+
+                            <VerticalStackLayout x:Name="YearContainer" Spacing="0" />
+
+                        </ScrollView>
+
+
+                        <!--  FADE TOP  -->
+
+                        <BoxView
+                            Grid.ColumnSpan="3"
+                            BackgroundColor="{AppThemeBinding Light=#FFFFFF,
+                                                              Dark=#111827}"
+                            HeightRequest="65"
+                            InputTransparent="True"
+                            Opacity="0.72"
+                            VerticalOptions="Start"
+                            ZIndex="5" />
+
+
+                        <!--  FADE BOTTOM  -->
+
+                        <BoxView
+                            Grid.ColumnSpan="3"
+                            BackgroundColor="{AppThemeBinding Light=#FFFFFF,
+                                                              Dark=#111827}"
+                            HeightRequest="65"
+                            InputTransparent="True"
+                            Opacity="0.72"
+                            VerticalOptions="End"
+                            ZIndex="5" />
+
+
+                        <!--  CENTER LINES  -->
+
+                        <Grid
+                            Grid.ColumnSpan="3"
+                            InputTransparent="True"
+                            ZIndex="10">
+
+                            <BoxView
+                                Margin="0,-24,0,0"
+                                BackgroundColor="{AppThemeBinding Light=#CBD5E1,
+                                                                  Dark=#4B5563}"
+                                HeightRequest="1"
+                                VerticalOptions="Center" />
+
+                            <BoxView
+                                Margin="0,24,0,0"
+                                BackgroundColor="{AppThemeBinding Light=#CBD5E1,
+                                                                  Dark=#4B5563}"
+                                HeightRequest="1"
+                                VerticalOptions="Center" />
+
+                        </Grid>
+
+                    </Grid>
+
+
+                    <!--  =================================================  -->
+                    <!--  AGE  -->
+                    <!--  =================================================  -->
+
+                    <Border
+                        Grid.Row="5"
+                        Margin="0,10,0,14"
+                        Padding="12,9"
+                        BackgroundColor="{AppThemeBinding Light=#F9FAFB,
+                                                          Dark=#1F2937}"
+                        StrokeShape="RoundRectangle 12"
+                        StrokeThickness="0">
+
+                        <Grid ColumnDefinitions="Auto,*,Auto">
+
+                            <Label
+                                FontAttributes="Bold"
+                                FontSize="11"
+                                Text="Age"
+                                TextColor="{AppThemeBinding Light=#6B7280,
+                                                            Dark=#9CA3AF}"
+                                VerticalOptions="Center" />
+
+                            <Label
+                                x:Name="SheetAgeText"
+                                Grid.Column="1"
+                                Margin="10,0"
+                                FontAttributes="Bold"
+                                FontSize="13"
+                                TextColor="{AppThemeBinding Light=#111827,
+                                                            Dark=#F9FAFB}"
+                                VerticalOptions="Center" />
+
+                            <Label
+                                Grid.Column="2"
+                                FontAttributes="Bold"
+                                FontSize="17"
+                                Text="✓"
+                                TextColor="{AppThemeBinding Light=#10B981,
+                                                            Dark=#34D399}" />
+
+                        </Grid>
+
+                    </Border>
+
+
+                    <!--  =================================================  -->
+                    <!--  BUTTONS  -->
+                    <!--  =================================================  -->
+
+                    <Grid
+                        Grid.Row="6"
+                        ColumnDefinitions="*,*"
+                        ColumnSpacing="10">
+
+                        <Button
+                            Grid.Column="0"
+                            BackgroundColor="{AppThemeBinding Light=#F3F4F6,
+                                                              Dark=#1F2937}"
+                            Clicked="CancelClicked"
+                            CornerRadius="13"
+                            FontAttributes="Bold"
+                            FontSize="14"
+                            HeightRequest="50"
+                            Text="Cancel"
+                            TextColor="{AppThemeBinding Light=#374151,
+                                                        Dark=#E5E7EB}" />
+
+                        <Button
+                            Grid.Column="1"
+                            BackgroundColor="{AppThemeBinding Light=#2563EB,
+                                                              Dark=#3B82F6}"
+                            Clicked="OkClicked"
+                            CornerRadius="13"
+                            FontAttributes="Bold"
+                            FontSize="14"
+                            HeightRequest="50"
+                            Text="Done"
+                            TextColor="White" />
+
+                    </Grid>
+
+                </Grid>
+
+            </Border>
+
+        </Grid>
+
+    </Grid>
+
+</ContentView>

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:conv="clr-namespace:CPMCD.Dotvanta.Component.Converters"
+             x:Class="CPMCD.Dotvanta.Component.Controls.BorderlessField"
+             x:Name="Root">
+
+    <ContentView.Resources>
+        <conv:StringToBoolConverter x:Key="StringToBoolConverter" />
+    </ContentView.Resources>
+
+    <VerticalStackLayout Spacing="4">
+
+        <Label Text="{Binding Label, Source={x:Reference Root}}"
+               IsVisible="{Binding Label, Source={x:Reference Root}, Converter={StaticResource StringToBoolConverter}}"
+               FontSize="13"
+               TextColor="{AppThemeBinding Light={StaticResource CpmcdTextLight}, Dark={StaticResource CpmcdTextDark}}" />
+
+        <Grid RowDefinitions="Auto,2">
+
+            <Entry Grid.Row="0"
+                   x:Name="InnerEntry"
+                   Text="{Binding Text, Source={x:Reference Root}, Mode=TwoWay}"
+                   Placeholder="{Binding Placeholder, Source={x:Reference Root}}"
+                   IsPassword="{Binding IsPassword, Source={x:Reference Root}}"
+                   Keyboard="{Binding EntryKeyboard, Source={x:Reference Root}}"
+                   BackgroundColor="Transparent"
+                   TextColor="{AppThemeBinding Light={StaticResource CpmcdTextLight}, Dark={StaticResource CpmcdTextDark}}"
+                   PlaceholderColor="{AppThemeBinding Light={StaticResource CpmcdPlaceholderLight}, Dark={StaticResource CpmcdPlaceholderDark}}" />
+
+            <!-- Border ki jagah sirf bottom underline - "borderless" look -->
+            <BoxView Grid.Row="1"
+                     HeightRequest="1.5"
+                     Color="{AppThemeBinding Light={StaticResource CpmcdBorderLight}, Dark={StaticResource CpmcdBorderDark}}" />
+        </Grid>
+
+        <Label Text="{Binding ErrorText, Source={x:Reference Root}}"
+               IsVisible="{Binding ErrorText, Source={x:Reference Root}, Converter={StaticResource StringToBoolConverter}}"
+               FontSize="11"
+               TextColor="{AppThemeBinding Light={StaticResource CpmcdErrorLight}, Dark={StaticResource CpmcdErrorDark}}" />
+
+    </VerticalStackLayout>
+
+</ContentView>

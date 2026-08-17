@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentView
+    x:Class="CPMCD.Dotvanta.Component.Controls.CustomDropdown"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:conv="clr-namespace:CPMCD.Dotvanta.Component.Converters"
+    x:Name="Root">
+
+    <ContentView.Resources>
+        <conv:StringToBoolConverter x:Key="StringToBoolConverter" />
+    </ContentView.Resources>
+
+    <VerticalStackLayout Spacing="4">
+
+        <Label
+            FontSize="13"
+            IsVisible="{Binding Label, Source={x:Reference Root}, Converter={StaticResource StringToBoolConverter}}"
+            Text="{Binding Label, Source={x:Reference Root}}"
+            TextColor="{AppThemeBinding Light={StaticResource CpmcdTextLight},
+                                        Dark={StaticResource CpmcdTextDark}}" />
+
+        <Border
+            Padding="10,0"
+            BackgroundColor="{AppThemeBinding Light={StaticResource CpmcdSurfaceLight},
+                                              Dark={StaticResource CpmcdSurfaceDark}}"
+            Stroke="{AppThemeBinding Light={StaticResource CpmcdBorderLight},
+                                     Dark={StaticResource CpmcdBorderDark}}"
+            StrokeShape="RoundRectangle 8"
+            StrokeThickness="1">
+
+            <Picker
+                x:Name="InnerPicker"
+                Title="{Binding Placeholder, Source={x:Reference Root}}"
+                BackgroundColor="Transparent"
+                ItemDisplayBinding="{Binding ItemDisplayBinding, Source={x:Reference Root}}"
+                ItemsSource="{Binding ItemsSource, Source={x:Reference Root}}"
+                SelectedItem="{Binding SelectedItem, Source={x:Reference Root}, Mode=TwoWay}"
+                TextColor="{AppThemeBinding Light={StaticResource CpmcdTextLight},
+                                            Dark={StaticResource CpmcdTextDark}}"
+                TitleColor="{AppThemeBinding Light={StaticResource CpmcdPlaceholderLight},
+                                             Dark={StaticResource CpmcdPlaceholderDark}}" />
+        </Border>
+
+    </VerticalStackLayout>
+
+</ContentView>

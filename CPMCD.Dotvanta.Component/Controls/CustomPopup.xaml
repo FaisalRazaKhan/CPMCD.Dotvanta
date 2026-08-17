@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="CPMCD.Dotvanta.Component.Controls.CustomPopup"
+             x:Name="Root"
+             InputTransparent="False">
+
+    <!-- Full-screen overlay: dim background + centered card -->
+    <Grid BackgroundColor="{AppThemeBinding Light={StaticResource CpmcdOverlayLight}, Dark={StaticResource CpmcdOverlayDark}}">
+
+        <Border Margin="30"
+                VerticalOptions="Center"
+                HorizontalOptions="Center"
+                MaximumWidthRequest="420"
+                Stroke="Transparent"
+                StrokeShape="RoundRectangle 16"
+                Padding="20"
+                BackgroundColor="{AppThemeBinding Light={StaticResource CpmcdBackgroundLight}, Dark={StaticResource CpmcdSurfaceDark}}">
+
+            <VerticalStackLayout Spacing="12">
+
+                <Label Text="{Binding Title, Source={x:Reference Root}}"
+                       FontSize="18"
+                       FontAttributes="Bold"
+                       TextColor="{AppThemeBinding Light={StaticResource CpmcdTextLight}, Dark={StaticResource CpmcdTextDark}}" />
+
+                <!-- Custom content ke liye slot -->
+                <ContentView x:Name="PopupBody" Content="{Binding PopupContent, Source={x:Reference Root}}" />
+
+                <HorizontalStackLayout Spacing="10" HorizontalOptions="End">
+                    <Button Text="{Binding SecondaryButtonText, Source={x:Reference Root}}"
+                            IsVisible="{Binding IsSecondaryButtonVisible, Source={x:Reference Root}}"
+                            Clicked="OnSecondaryClicked"
+                            BackgroundColor="Transparent"
+                            TextColor="{AppThemeBinding Light={StaticResource CpmcdPrimaryLight}, Dark={StaticResource CpmcdPrimaryDark}}" />
+                    <Button Text="{Binding PrimaryButtonText, Source={x:Reference Root}}"
+                            Clicked="OnPrimaryClicked"
+                            BackgroundColor="{AppThemeBinding Light={StaticResource CpmcdPrimaryLight}, Dark={StaticResource CpmcdPrimaryDark}}"
+                            TextColor="White" />
+                </HorizontalStackLayout>
+
+            </VerticalStackLayout>
+        </Border>
+    </Grid>
+
+</ContentView>

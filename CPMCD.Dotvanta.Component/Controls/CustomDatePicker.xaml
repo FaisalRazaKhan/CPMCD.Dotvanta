@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:conv="clr-namespace:CPMCD.Dotvanta.Component.Converters"
+             x:Class="CPMCD.Dotvanta.Component.Controls.CustomDatePicker"
+             x:Name="Root">
+
+    <ContentView.Resources>
+        <conv:StringToBoolConverter x:Key="StringToBoolConverter" />
+    </ContentView.Resources>
+
+    <VerticalStackLayout Spacing="4">
+
+        <Label Text="{Binding Label, Source={x:Reference Root}}"
+               IsVisible="{Binding Label, Source={x:Reference Root}, Converter={StaticResource StringToBoolConverter}}"
+               FontSize="13"
+               TextColor="{AppThemeBinding Light={StaticResource CpmcdTextLight}, Dark={StaticResource CpmcdTextDark}}" />
+
+        <Border Stroke="{AppThemeBinding Light={StaticResource CpmcdBorderLight}, Dark={StaticResource CpmcdBorderDark}}"
+                StrokeThickness="1"
+                StrokeShape="RoundRectangle 8"
+                Padding="10,4"
+                BackgroundColor="{AppThemeBinding Light={StaticResource CpmcdSurfaceLight}, Dark={StaticResource CpmcdSurfaceDark}}">
+
+            <DatePicker x:Name="InnerDatePicker"
+                        Date="{Binding SelectedDate, Source={x:Reference Root}, Mode=TwoWay}"
+                        MinimumDate="{Binding MinimumDate, Source={x:Reference Root}}"
+                        MaximumDate="{Binding MaximumDate, Source={x:Reference Root}}"
+                        Format="{Binding DateFormat, Source={x:Reference Root}}"
+                        BackgroundColor="Transparent"
+                        TextColor="{AppThemeBinding Light={StaticResource CpmcdTextLight}, Dark={StaticResource CpmcdTextDark}}" />
+        </Border>
+
+    </VerticalStackLayout>
+
+</ContentView>
