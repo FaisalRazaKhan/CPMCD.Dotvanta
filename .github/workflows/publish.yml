@@ -1,12 +1,10 @@
 name: Publish CPMCD Dotvanta
 
 on:
-  # Automatic NuGet publishing when a version tag is pushed
   push:
     tags:
       - 'v*.*.*'
 
-  # Optional manual execution
   workflow_dispatch:
     inputs:
       version:
@@ -24,9 +22,8 @@ jobs:
     runs-on: windows-latest
 
     steps:
-
       # ============================================
-      # 1. Checkout repository
+      # 1. Checkout
       # ============================================
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -40,7 +37,7 @@ jobs:
           dotnet-version: '9.0.x'
 
       # ============================================
-      # 3. Install .NET MAUI workload
+      # 3. Install MAUI workload
       # ============================================
       - name: Install MAUI workload
         shell: pwsh
@@ -67,28 +64,77 @@ jobs:
               exit 1
           }
 
-          "VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "VERSION=$version" | Out-File `
+            -FilePath $env:GITHUB_ENV `
+            -Append
 
       # ============================================
-      # 5. Restore projects
+      # 5. Verify project files
       # ============================================
-      - name: Restore
+      - name: Verify project files
         shell: pwsh
         run: |
-          dotnet restore CPMCD.Dotvanta/CPMCD.Dotvanta.sln
+          $projects = @(
+              "./CPMCD.Dotvanta.ApiCaller/CPMCD.Dotvanta.ApiCaller.csproj",
+              "./CPMCD.Dotvanta.Component/CPMCD.Dotvanta.Component.csproj",
+              "./CPMCD.Dotvanta.Mail/CPMCD.Dotvanta.Mail.csproj"
+          )
+
+          foreach ($project in $projects) {
+              if (-not (Test-Path $project)) {
+                  Write-Error "Project not found: $project"
+                  exit 1
+              }
+
+              Write-Host "Found: $project"
+          }
+
+          Write-Host "All project files found."
 
       # ============================================
-      # 6. Build projects
+      # 6. Restore
       # ============================================
-      - name: Build
+      - name: Restore ApiCaller
         shell: pwsh
         run: |
-          dotnet build CPMCD.Dotvanta/CPMCD.Dotvanta.sln `
+          dotnet restore ./CPMCD.Dotvanta.ApiCaller/CPMCD.Dotvanta.ApiCaller.csproj
+
+      - name: Restore Component
+        shell: pwsh
+        run: |
+          dotnet restore ./CPMCD.Dotvanta.Component/CPMCD.Dotvanta.Component.csproj
+
+      - name: Restore Mail
+        shell: pwsh
+        run: |
+          dotnet restore ./CPMCD.Dotvanta.Mail/CPMCD.Dotvanta.Mail.csproj
+
+      # ============================================
+      # 7. Build
+      # ============================================
+      - name: Build ApiCaller
+        shell: pwsh
+        run: |
+          dotnet build ./CPMCD.Dotvanta.ApiCaller/CPMCD.Dotvanta.ApiCaller.csproj `
+            --configuration Release `
+            --no-restore
+
+      - name: Build Component
+        shell: pwsh
+        run: |
+          dotnet build ./CPMCD.Dotvanta.Component/CPMCD.Dotvanta.Component.csproj `
+            --configuration Release `
+            --no-restore
+
+      - name: Build Mail
+        shell: pwsh
+        run: |
+          dotnet build ./CPMCD.Dotvanta.Mail/CPMCD.Dotvanta.Mail.csproj `
             --configuration Release `
             --no-restore
 
       # ============================================
-      # 7. Create artifacts directory
+      # 8. Create artifacts directory
       # ============================================
       - name: Create artifacts directory
         shell: pwsh
@@ -96,91 +142,74 @@ jobs:
           New-Item -ItemType Directory -Force -Path "./artifacts"
 
       # ============================================
-      # 8. Pack Dotvanta.ApiCaller
+      # 9. Pack
       # ============================================
-      - name: Pack Dotvanta.ApiCaller
+      - name: Pack ApiCaller
         shell: pwsh
         run: |
-          dotnet pack `
-            CPMCD.Dotvanta/CPMCD.Dotvanta.ApiCaller/CPMCD.Dotvanta.ApiCaller.csproj `
+          dotnet pack ./CPMCD.Dotvanta.ApiCaller/CPMCD.Dotvanta.ApiCaller.csproj `
+            --configuration Release `
+            --no-build `
+            --output ./artifacts `
+            -p:PackageVersion=$env:VERSION
+
+      - name: Pack Component
+        shell: pwsh
+        run: |
+          dotnet pack ./CPMCD.Dotvanta.Component/CPMCD.Dotvanta.Component.csproj `
+            --configuration Release `
+            --no-build `
+            --output ./artifacts `
+            -p:PackageVersion=$env:VERSION
+
+      - name: Pack Mail
+        shell: pwsh
+        run: |
+          dotnet pack ./CPMCD.Dotvanta.Mail/CPMCD.Dotvanta.Mail.csproj `
             --configuration Release `
             --no-build `
             --output ./artifacts `
             -p:PackageVersion=$env:VERSION
 
       # ============================================
-      # 9. Pack Dotvanta.Component
-      # ============================================
-      - name: Pack Dotvanta.Component
-        shell: pwsh
-        run: |
-          dotnet pack `
-            CPMCD.Dotvanta/CPMCD.Dotvanta.Component/CPMCD.Dotvanta.Component.csproj `
-            --configuration Release `
-            --no-build `
-            --output ./artifacts `
-            -p:PackageVersion=$env:VERSION
-
-      # ============================================
-      # 10. Pack Dotvanta.Mail
-      # ============================================
-      - name: Pack Dotvanta.Mail
-        shell: pwsh
-        run: |
-          dotnet pack `
-            CPMCD.Dotvanta/CPMCD.Dotvanta.Mail/CPMCD.Dotvanta.Mail.csproj `
-            --configuration Release `
-            --no-build `
-            --output ./artifacts `
-            -p:PackageVersion=$env:VERSION
-
-      # ============================================
-      # 11. Verify generated packages
+      # 10. Verify packages
       # ============================================
       - name: Verify NuGet packages
         shell: pwsh
         run: |
           Write-Host ""
-          Write-Host "Generated NuGet packages:"
-          Write-Host "=========================================="
-
+          Write-Host "Generated packages:"
           Get-ChildItem "./artifacts" -Filter "*.nupkg" |
             ForEach-Object {
-              Write-Host $_.Name
+              Write-Host " - $($_.Name)"
             }
 
-          $apiCaller = Get-ChildItem `
-            -Path "./artifacts" `
-            -Filter "CPMCD.Dotvanta.ApiCaller.$env:VERSION.nupkg"
+          $expected = @(
+              "CPMCD.Dotvanta.ApiCaller.$env:VERSION.nupkg",
+              "CPMCD.Dotvanta.Component.$env:VERSION.nupkg",
+              "CPMCD.Dotvanta.Mail.$env:VERSION.nupkg"
+          )
 
-          $component = Get-ChildItem `
-            -Path "./artifacts" `
-            -Filter "CPMCD.Dotvanta.Component.$env:VERSION.nupkg"
-
-          $mail = Get-ChildItem `
-            -Path "./artifacts" `
-            -Filter "CPMCD.Dotvanta.Mail.$env:VERSION.nupkg"
-
-          if (-not $apiCaller) {
-              Write-Error "CPMCD.Dotvanta.ApiCaller package was not generated."
-              exit 1
+          foreach ($name in $expected) {
+              if (-not (Test-Path "./artifacts/$name")) {
+                  Write-Error "Package was not generated: $name"
+                  exit 1
+              }
           }
 
-          if (-not $component) {
-              Write-Error "CPMCD.Dotvanta.Component package was not generated."
-              exit 1
-          }
-
-          if (-not $mail) {
-              Write-Error "CPMCD.Dotvanta.Mail package was not generated."
-              exit 1
-          }
-
-          Write-Host ""
-          Write-Host "All NuGet packages generated successfully."
+          Write-Host "All packages generated successfully."
 
       # ============================================
-      # 12. NuGet Trusted Publishing Login
+      # 11. NuGet Trusted Publishing / OIDC
+      #
+      # IMPORTANT:
+      # nuget.org must have a Trusted Publishing policy:
+      #
+      # Repository Owner : FaisalRazaKhan
+      # Repository       : CPMCD.Dotvanta
+      # Workflow File    : publish.yml
+      # Environment      : empty
+      # Policy Owner     : the NuGet owner of the packages
       # ============================================
       - name: NuGet Trusted Publishing Login
         uses: NuGet/login@v1
@@ -189,22 +218,21 @@ jobs:
           user: frazakhan
 
       # ============================================
-      # 13. Publish Dotvanta.ApiCaller
+      # 12. Publish ApiCaller
       # ============================================
-      - name: Publish Dotvanta.ApiCaller
+      - name: Publish ApiCaller
         shell: pwsh
         run: |
-          $package = Get-ChildItem `
-            -Path "./artifacts" `
+          $package = Get-ChildItem "./artifacts" `
             -Filter "CPMCD.Dotvanta.ApiCaller.$env:VERSION.nupkg" |
             Select-Object -First 1
 
           if (-not $package) {
-              Write-Error "CPMCD.Dotvanta.ApiCaller package not found."
+              Write-Error "ApiCaller package not found."
               exit 1
           }
 
-          Write-Host "Publishing: $($package.FullName)"
+          Write-Host "Publishing: $($package.Name)"
 
           dotnet nuget push $package.FullName `
             --api-key "${{ steps.nuget-login.outputs.NUGET_API_KEY }}" `
@@ -212,22 +240,21 @@ jobs:
             --skip-duplicate
 
       # ============================================
-      # 14. Publish Dotvanta.Component
+      # 13. Publish Component
       # ============================================
-      - name: Publish Dotvanta.Component
+      - name: Publish Component
         shell: pwsh
         run: |
-          $package = Get-ChildItem `
-            -Path "./artifacts" `
+          $package = Get-ChildItem "./artifacts" `
             -Filter "CPMCD.Dotvanta.Component.$env:VERSION.nupkg" |
             Select-Object -First 1
 
           if (-not $package) {
-              Write-Error "CPMCD.Dotvanta.Component package not found."
+              Write-Error "Component package not found."
               exit 1
           }
 
-          Write-Host "Publishing: $($package.FullName)"
+          Write-Host "Publishing: $($package.Name)"
 
           dotnet nuget push $package.FullName `
             --api-key "${{ steps.nuget-login.outputs.NUGET_API_KEY }}" `
@@ -235,22 +262,21 @@ jobs:
             --skip-duplicate
 
       # ============================================
-      # 15. Publish Dotvanta.Mail
+      # 14. Publish Mail
       # ============================================
-      - name: Publish Dotvanta.Mail
+      - name: Publish Mail
         shell: pwsh
         run: |
-          $package = Get-ChildItem `
-            -Path "./artifacts" `
+          $package = Get-ChildItem "./artifacts" `
             -Filter "CPMCD.Dotvanta.Mail.$env:VERSION.nupkg" |
             Select-Object -First 1
 
           if (-not $package) {
-              Write-Error "CPMCD.Dotvanta.Mail package not found."
+              Write-Error "Mail package not found."
               exit 1
           }
 
-          Write-Host "Publishing: $($package.FullName)"
+          Write-Host "Publishing: $($package.Name)"
 
           dotnet nuget push $package.FullName `
             --api-key "${{ steps.nuget-login.outputs.NUGET_API_KEY }}" `
@@ -258,7 +284,7 @@ jobs:
             --skip-duplicate
 
       # ============================================
-      # 16. Upload packages as GitHub artifacts
+      # 15. Upload packages
       # ============================================
       - name: Upload NuGet packages
         uses: actions/upload-artifact@v4
@@ -267,7 +293,7 @@ jobs:
           path: ./artifacts/*.nupkg
 
       # ============================================
-      # 17. Completed
+      # 16. Completed
       # ============================================
       - name: Publish completed
         shell: pwsh
@@ -275,11 +301,12 @@ jobs:
           Write-Host ""
           Write-Host "=========================================="
           Write-Host " NuGet Publishing Completed Successfully "
-          Write-Host " Project: CPMCD.Dotvanta"
-          Write-Host " Version: $env:VERSION"
           Write-Host "=========================================="
+          Write-Host "Project : CPMCD.Dotvanta"
+          Write-Host "Version : $env:VERSION"
           Write-Host ""
-          Write-Host "Published packages:"
+          Write-Host "Published:"
           Write-Host " - CPMCD.Dotvanta.ApiCaller"
           Write-Host " - CPMCD.Dotvanta.Component"
           Write-Host " - CPMCD.Dotvanta.Mail"
+          Write-Host "=========================================="
