@@ -5,10 +5,10 @@
     <LangVersion>8.0</LangVersion>
     <Nullable>disable</Nullable>
     <PackageId>CPMCD.Dotvanta.ApiCaller</PackageId>
-	  <Version>1.0.0</Version>
+	  <Version>1.0.1</Version>
 
 	  <Authors>CPMCD : Faisal Raza Khan</Authors>
-	  <Description>Universal HTTP API caller for Maui, Xamarin, Windows and Web apps - GET/POST/PUT/DELETE with token/header support.</Description>
+	  <Description>Universal, high-performance HTTP API caller for Maui, Xamarin, Windows and Web apps - GET/POST/PUT/PATCH/DELETE with pooled connections, streaming JSON, retry, cancellation and token/header support.</Description>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
